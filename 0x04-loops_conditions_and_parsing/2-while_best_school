@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Print 'best shcoll' 10 times
 
 i=0
 
