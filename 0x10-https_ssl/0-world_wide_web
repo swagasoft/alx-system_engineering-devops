@@ -1,16 +1,18 @@
-onfigure your domain zone so that the subdomain www points to your load-balancer IP (lb-01).
-if [ "$#" = 1 ]
-then
-    subdomains=("www" "lb-01" "web-01" "web-02")
-    for sub_domain in "${subdomains[@]}"
-    do
-	record_type=$(dig $sub_domain.$1 | grep -A1 'ANSWER SECTION' | tail -1 | awk '{print $4}')
-        destination=$(dig $sub_domain.$1 | grep -A1 'ANSWER SECTION' | tail -1 | awk '{print $5}')
-	echo "The subdomain $sub_domain is a $record_type record and points to $destination"
-    done
-elif [ "$#" = 2 ]
-then
-    record_type=$(dig $2.$1 | grep -A1 'ANSWER SECTION' | tail -1 | awk '{print $4}')
-    destination=$(dig $2.$1 | grep -A1 'ANSWER SECTION' | tail -1 | awk '{print $5}')
-    echo "The subdomain $2 is a $record_type record and points to $destination"
-fi
+#!/usr/bin/env bash
+
+#shellcheck disable=SC2086
+# Information about server domains
+
+check_domain() {
+    # Check for a valid domain
+    SUBDOMAINS=("www"  "lb-01" "web-01" "web-02")
+    if [ -z "$2" ]; then
+	for i in "${SUBDOMAINS[@]}"; do
+	    dig "$i.$1" | grep -A1 'ANSWER SECTION:' | tail -n1 | awk '{split($0, SUBDOMAIN, "."); print "The subdomain " SUBDOMAIN[1] " is a " $4 " record and points to " $5}'
+	done
+    else
+	dig "$2.$1" | grep -A1 'ANSWER SECTION:' | tail -n1 | awk '{split($0, SUBDOMAIN, "."); print "The subdomain " SUBDOMAIN[1] " is a " $4 " record and points to " $5}'
+    fi
+}
+
+check_domain "$1" "$2"
